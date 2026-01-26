@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "839431369002",
+    "project_id": "employeetasktracking",
+    "storage_bucket": "employeetasktracking.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839431369002:android:8279efe1e34f5a8008ee53",
+        "android_client_info": {
+          "package_name": "com.example.employee_task_tracking"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIW90MZp2BsutL9IuQ9HqfXqW_poFQVEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
