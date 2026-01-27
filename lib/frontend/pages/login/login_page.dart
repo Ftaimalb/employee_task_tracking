@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../services/auth_service.dart';
+import '../../../backend/services/auth_service.dart';
 import '../adminstration/adminDashboard.dart';
 import '../employee/employeeDashboard.dart';
 import '../manager/managerDashboard.dart';
