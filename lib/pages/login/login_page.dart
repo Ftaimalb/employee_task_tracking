@@ -15,61 +15,60 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _authService = AuthService();
-  final _formKey = GlobalKey<FormState>();
+  final AuthService authService = AuthService();
+  final formKey = GlobalKey<FormState>();
 
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   bool _hidePassword = true;
-  bool _loading = false;
-  String? _error;
+  bool isLoading = false;
+  String? errorMessage;
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _login() async {
     setState(() {
-      _error = null;
-      _loading = true;
+      errorMessage = null;
+      isLoading = true;
     });
 
     try {
-      if (!(_formKey.currentState?.validate() ?? false)) {
-        setState(() => _loading = false);
+      if (!(formKey.currentState?.validate() ?? false)) {
+        setState(() => isLoading = false);
         return;
       }
 
-      final email = _emailController.text.trim();
-      final password = _passwordController.text;
+      final email = emailController.text.trim();
+      final password = passwordController.text;
 
-      final UserCredential =
-          await _authService.signIn(email: email, password: password);
-      final uid = UserCredential.user?.uid;
+      final userCredential =
+          await authService.signIn(email: email, password: password);
 
+      final uid = userCredential.user?.uid;
       if (uid == null) {
-        throw FirebaseAuthException(
-            code: 'no-uid', message: 'Login failed. Please try again.');
+        throw Exception("Login failed. Try again.");
       }
 
-      // Fetch user profile from Firestore: users/{uid}
-      final userDoc =
+      final userSnap =
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      // Fetch user profile from Firestore: users/{uid}
 
-      if (!userDoc.exists) {
+      if (!userSnap.exists) {
         await FirebaseAuth.instance.signOut();
         throw Exception("No user profile found. Please contact the admin.");
       }
 
-      final data = userDoc.data()!;
-      final role = (data['role'] ?? '').toString().toLowerCase();
-      final isActive = (data['isActive'] ?? true) == true;
+      final userdata = userSnap.data()!;
+      final role = (userdata['role'] ?? '').toString().toLowerCase();
+      final isActive = (userdata['isActive'] ?? true) == true;
 
-      if (!isActive) {
+      if (isActive != true) {
         await FirebaseAuth.instance.signOut();
         throw Exception("Your account is disabled. Please contact the admin.");
       }
@@ -92,20 +91,20 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } on FirebaseAuthException catch (e) {
       setState(() {
-        _error = _AuthError(e);
+        errorMessage = authErrorMessage(e);
       });
     } catch (e) {
       setState(() {
-        _error = e.toString().replaceFirst('Exception: ', '');
+        errorMessage = e.toString().replaceFirst('Exception: ', '');
       });
     } finally {
       if (mounted) {
-        setState(() => _loading = false);
+        setState(() => isLoading = false);
       }
     }
   }
 
-  String _AuthError(FirebaseAuthException e) {
+  String authErrorMessage(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':
         return "No account found with that email.";
@@ -121,22 +120,22 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _forgotPassword() async {
-    final email = _emailController.text.trim();
+    final email = emailController.text.trim();
     if (email.isEmpty) {
-      setState(() =>
-          _error = "Enter your email first, then click 'Forgot password?'.");
+      setState(() => errorMessage =
+          "Enter your email first, then click 'Forgot password?'.");
       return;
     }
 
     try {
-      await _authService.resetPassword(email: email);
+      await authService.resetPassword(email: email);
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Password reset email sent.")),
       );
     } catch (_) {
-      setState(() => _error =
-          "Could not send reset email. Check the email and try again.");
+      setState(() => errorMessage = "Could not send reset email.");
     }
   }
 
@@ -167,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Form(
-                    key: _formKey,
+                    key: formKey,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -185,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(fontSize: 14),
                         ),
                         const SizedBox(height: 18),
-                        if (_error != null) ...[
+                        if (errorMessage != null) ...[
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(12),
@@ -194,14 +193,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: const Color.fromARGB(255, 164, 227, 217),
                             ),
                             child: Text(
-                              _error!,
+                              errorMessage!,
                               style: const TextStyle(fontSize: 13),
                             ),
                           ),
                           const SizedBox(height: 12),
                         ],
                         TextFormField(
-                          controller: _emailController,
+                          controller: emailController,
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             labelText: "Email",
@@ -219,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
-                          controller: _passwordController,
+                          controller: passwordController,
                           obscureText: _hidePassword,
                           decoration: InputDecoration(
                             labelText: "Password",
@@ -244,7 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: _loading ? null : _forgotPassword,
+                            onPressed: isLoading ? null : _forgotPassword,
                             child: const Text("Forgot password?"),
                           ),
                         ),
@@ -253,12 +252,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: double.infinity,
                           height: 48,
                           child: ElevatedButton(
-                            onPressed: _loading ? null : _login,
+                            onPressed: isLoading ? null : _login,
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14)),
                             ),
-                            child: _loading
+                            child: isLoading
                                 ? const SizedBox(
                                     height: 20,
                                     width: 20,
