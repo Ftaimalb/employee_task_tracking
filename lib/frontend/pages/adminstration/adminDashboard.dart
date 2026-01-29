@@ -29,8 +29,7 @@ class AdminDashboard extends StatelessWidget {
     ];
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 164, 227, 217),
-      appBar: AppBar(title: const Text("Admin Dashboard")
-      ),
+      appBar: AppBar(title: const Text("Admin Dashboard")),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -123,11 +122,11 @@ class AdminDashboard extends StatelessWidget {
                           CircleAvatar(
                             child: Text(
                               (u["name"] ?? "U").toString()[0],
-                              style: const TextStyle(fontWeight: FontWeight.w700),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ),
                           const SizedBox(width: 12),
-
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,9 +146,9 @@ class AdminDashboard extends StatelessWidget {
                               ],
                             ),
                           ),
-
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: isDisabled
                                   ? const Color(0xFFFFE5E5)
@@ -158,7 +157,8 @@ class AdminDashboard extends StatelessWidget {
                             ),
                             child: Text(
                               u["status"] ?? "",
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.w600),
                             ),
                           ),
                         ],
