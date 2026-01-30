@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'manager_dashboard_tab.dart';
-import 'manager_tasks_tab.dart';
-import 'manager_profile_tab.dart';
+import 'managerDashboard_tab.dart';
+import 'managerTasks_tab.dart';
+import 'managerProfile_tab.dart';
 
 class ManagerHome extends StatefulWidget {
   const ManagerHome({super.key});

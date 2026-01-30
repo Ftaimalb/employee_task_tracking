@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../backend/services/auth_service.dart';
 import '../adminstration/adminDashboard.dart';
 import '../employee/employeeDashboard.dart';
-import '../manager/managerDashboard.dart';
+import '../manager/managerHomePage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
             context, MaterialPageRoute(builder: (_) => const AdminDashboard()));
       } else if (role == 'manager') {
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (_) => const ManagerDashboard()));
+            MaterialPageRoute(builder: (_) => const ManagerHome()));
       } else if (role == 'employee') {
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (_) => const EmployeeDashboard()));
