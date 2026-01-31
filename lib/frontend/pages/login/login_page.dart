@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:employee_task_tracking/frontend/pages/adminstration/adminHomePage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../backend/services/auth_service.dart';
-import '../adminstration/adminDashboard.dart';
+import '../adminstration/adminDashboard_tab.dart';
 import '../employee/employeeDashboard.dart';
 import '../manager/managerHomePage.dart';
 
@@ -78,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // Route based on role
       if (role == 'admin') {
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (_) => const AdminDashboard()));
+            context, MaterialPageRoute(builder: (_) => const AdminHome()));
       } else if (role == 'manager') {
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (_) => const ManagerHome()));
