@@ -1,11 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:employee_task_tracking/frontend/pages/adminstration/adminHomePage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../backend/services/auth_service.dart';
-import '../adminstration/adminDashboard_tab.dart';
-import '../employee/employeeDashboard.dart';
+import '../adminstration/adminHomePage.dart';
+import '../employee/employeeHome.dart';
 import '../manager/managerHomePage.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -85,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(builder: (_) => const ManagerHome()));
       } else if (role == 'employee') {
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (_) => const EmployeeDashboard()));
+            MaterialPageRoute(builder: (_) => const EmployeeHome()));
       } else {
         await FirebaseAuth.instance.signOut();
         throw Exception("Account role not found. Contact the administrator.");
