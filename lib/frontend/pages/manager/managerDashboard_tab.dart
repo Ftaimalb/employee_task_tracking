@@ -7,7 +7,6 @@ class ManagerDashboardTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dummy counts (replace later with Firestore)
     const total = 12;
     const overdue = 2;
     const done = 5;
