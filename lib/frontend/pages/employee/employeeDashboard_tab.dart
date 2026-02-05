@@ -63,9 +63,9 @@ class EmployeeDashboardTab extends StatelessWidget {
               children: [
                 Text("• Update task status regularly."),
                 SizedBox(height: 6),
-                Text("• Add comments if you need help."),
+                Text("• Add comments ."),
                 SizedBox(height: 6),
-                Text("• Upload files to keep evidence of work."),
+                Text("• Upload files ."),
               ],
             ),
           ),

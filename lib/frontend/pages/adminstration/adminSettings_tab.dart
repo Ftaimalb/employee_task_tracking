@@ -33,7 +33,7 @@ class AdminSettingsTab extends StatelessWidget {
 
           const AppCard(
             child: Text(
-              "More settings later ( notification rules, role permissions). "
+              "( notification rules, role permissions). "
               ,
               style: TextStyle(fontSize: 13),
             ),

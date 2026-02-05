@@ -29,7 +29,7 @@ class EmployeeProfileTab extends StatelessWidget {
         children: [
           const AppSectionTitle(
             title: "Profile",
-            subtitle: "Basic profile details for the prototype.",
+            subtitle: "Basic profile details.",
           ),
 
           AppCard(

@@ -25,7 +25,7 @@ class AdminUsersTab extends StatelessWidget {
               const Expanded(
                 child: AppSectionTitle(
                   title: "Users",
-                  subtitle: "Dummy data for layout testing.",
+                  subtitle: "Dummy data for layout .",
                 ),
               ),
               ElevatedButton.icon(

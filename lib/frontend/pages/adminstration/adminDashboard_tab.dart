@@ -19,7 +19,7 @@ class AdminDashboardTab extends StatelessWidget {
         children: [
           const AppSectionTitle(
             title: "Hi, Admin",
-            subtitle: "Manage accounts and monitor system activity.",
+            subtitle: "Manage accounts and  system activity.",
           ),
 
           Row(
@@ -59,7 +59,7 @@ class AdminDashboardTab extends StatelessWidget {
           const AppSectionTitle(title: "Notes"),
           const AppCard(
             child: Text(
-              "This page currently uses dummy statistics. Firestore queries will replace these values later.",
+              " dummy statistics.",
               style: TextStyle(fontSize: 13),
             ),
           ),

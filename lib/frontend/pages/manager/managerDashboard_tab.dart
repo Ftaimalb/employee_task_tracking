@@ -62,7 +62,7 @@ class ManagerDashboardTab extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("UI only: Team screen later.")),
+                        const SnackBar(content: Text("Team screen later.")),
                       );
                     },
                     icon: const Icon(Icons.people_outline),
@@ -77,7 +77,7 @@ class ManagerDashboardTab extends StatelessWidget {
           const AppSectionTitle(title: "Note"),
           const AppCard(
             child: Text(
-              "uses dummy numbers ",
+              " dummy numbers ",
               style: TextStyle(fontSize: 13),
             ),
           ),
