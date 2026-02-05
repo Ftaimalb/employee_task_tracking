@@ -18,6 +18,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        theme: ThemeData(
+          useMaterial3: true,
+          scaffoldBackgroundColor: const Color(0xFFF5F7FB),
+          appBarTheme: const AppBarTheme(
+            centerTitle: true,
+            elevation: 0,
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+          ),
+          cardTheme: CardTheme(
+            color: Colors.white,
+            elevation: 0,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
         debugShowCheckedModeBanner: false,
         title: 'Employee Task Tracking',
         home: const LoginScreen());

@@ -22,22 +22,41 @@ class _AdminHomeState extends State<AdminHome> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 164, 227, 217),
-      appBar: AppBar(
-        title: const Text("Admin"),
-        centerTitle: true,
+      return Stack(
+    children: [
+      // Background gradient
+      Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color.fromARGB(255, 164, 227, 217),
+              Color.fromARGB(255, 232, 226, 226),
+            ],
+          ),
+        ),
       ),
-      body: pages[index],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: index,
-        onTap: (i) => setState(() => index = i),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.group_outlined), label: "Users"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "Settings"),
-        ],
+      Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text("Admin"),
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: pages[index],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: index,
+          onTap: (i) => setState(() => index = i),
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), label: "Home"),
+            BottomNavigationBarItem(icon: Icon(Icons.group_outlined), label: "Users"),
+            BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "Settings"),
+          ],
+        ),
       ),
-    );
+    ],
+  );
   }
 }

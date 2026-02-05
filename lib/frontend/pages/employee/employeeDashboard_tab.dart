@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/UI_cards.dart';
 
 class EmployeeDashboardTab extends StatelessWidget {
   const EmployeeDashboardTab({super.key});
@@ -15,69 +16,58 @@ class EmployeeDashboardTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("My Overview", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-
+          const AppSectionTitle(
+            title: "Hi, Employee",
+            subtitle: "Here is a quick summary of your tasks.",
+          ),
           Row(
             children: const [
-              Expanded(child: _StatCard(title: "Assigned", value: "$assigned", icon: Icons.assignment_outlined)),
+              StatMiniCard(
+                  label: "Assigned",
+                  value: "$assigned",
+                  icon: Icons.assignment_outlined),
               SizedBox(width: 12),
-              Expanded(child: _StatCard(title: "Due Soon", value: "$dueSoon", icon: Icons.schedule_outlined)),
+              StatMiniCard(
+                  label: "Due soon",
+                  value: "$dueSoon",
+                  icon: Icons.schedule_outlined),
             ],
           ),
           const SizedBox(height: 12),
-          const _StatCard(title: "Completed", value: "$completed", icon: Icons.check_circle_outline),
-
+          Row(
+            children: const [
+              StatMiniCard(
+                  label: "Completed",
+                  value: "$completed",
+                  icon: Icons.check_circle_outline),
+              SizedBox(width: 12),
+              StatMiniCard(
+                  label: "Overdue",
+                  value: "1",
+                  icon: Icons.warning_amber_outlined),
+            ],
+          ),
           const SizedBox(height: 18),
-          const Text("Today", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 10),
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [BoxShadow(blurRadius: 10, offset: Offset(0, 4), color: Color(0x14000000))],
-            ),
-            child: const Text(
-              "You have 2 tasks due soon. Check the My Tasks tab to update progress.",
+          const AppSectionTitle(title: "Today"),
+          const AppCard(
+            child: Text(
+              "You have 2 tasks due soon. Open 'My Tasks' to update progress or upload attachments.",
               style: TextStyle(fontSize: 13),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-
-  const _StatCard({required this.title, required this.value, required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 247, 248, 248),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [BoxShadow(blurRadius: 10, offset: Offset(0, 4), color: Color(0x14000000))],
-      ),
-      child: Row(
-        children: [
-          Icon(icon),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontSize: 12)),
-              const SizedBox(height: 4),
-              Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-            ],
+          const SizedBox(height: 12),
+          const AppSectionTitle(title: "Quick tips"),
+          const AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("• Update task status regularly."),
+                SizedBox(height: 6),
+                Text("• Add comments if you need help."),
+                SizedBox(height: 6),
+                Text("• Upload files to keep evidence of work."),
+              ],
+            ),
           ),
         ],
       ),

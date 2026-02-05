@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../login/login_page.dart';
+import '../../widgets/UI_cards.dart';
 
 class AdminSettingsTab extends StatelessWidget {
   const AdminSettingsTab({super.key});
@@ -17,37 +18,29 @@ class AdminSettingsTab extends StatelessWidget {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Text("Settings",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+          const AppSectionTitle(
+            title: "Settings",
+            subtitle: "Basic settings for the prototype.",
           ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                    color: Color.fromARGB(255, 164, 227, 217))
-              ],
-            ),
-            child: const Text(
-              "Admin settings will be expanded later. For now, logout is available.",
+
+          const AppCard(
+            child: Text(
+              "More settings later ( notification rules, role permissions). "
+              ,
               style: TextStyle(fontSize: 13),
             ),
           ),
-          const SizedBox(height: 16),
+
+          const Spacer(),
+
           SizedBox(
             width: double.infinity,
             height: 48,

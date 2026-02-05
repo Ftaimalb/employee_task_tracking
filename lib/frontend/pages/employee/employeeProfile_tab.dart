@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../widgets/UI_cards.dart';
 import '../login/login_page.dart';
 
 class EmployeeProfileTab extends StatelessWidget {
@@ -17,52 +18,44 @@ class EmployeeProfileTab extends StatelessWidget {
     }
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
-    // Dummy profile info (replace later with Firestore data)
-    const name = "Employee User";
-    const role = "Employee";
-    const email = "employee@email.com";
+    final email = FirebaseAuth.instance.currentUser?.email ?? "employee@email.com";
 
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [BoxShadow(blurRadius: 10, offset: Offset(0, 4), color: Color(0x14000000))],
-            ),
+          const AppSectionTitle(
+            title: "Profile",
+            subtitle: "Basic profile details for the prototype.",
+          ),
+
+          AppCard(
             child: Row(
               children: [
                 const CircleAvatar(radius: 26, child: Icon(Icons.person_outline)),
                 const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                    SizedBox(height: 2),
-                    Text(role, style: TextStyle(fontSize: 12)),
-                    SizedBox(height: 2),
-                    Text(email, style: TextStyle(fontSize: 12)),
+                  children: [
+                    const Text("Employee User", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 2),
+                    const Text("Employee", style: TextStyle(fontSize: 12, color: Colors.black54)),
+                    const SizedBox(height: 2),
+                    Text(email, style: const TextStyle(fontSize: 12, color: Colors.black54)),
                   ],
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 16),
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [BoxShadow(blurRadius: 10, offset: Offset(0, 4), color: Color(0x14000000))],
+          const SizedBox(height: 12),
+          const AppCard(
+            child: Text(
+              "Profile later",
+              style: TextStyle(fontSize: 13),
             ),
           ),
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../../widgets/UI_cards.dart';
 import '../sharedPages/taskDetailsPage.dart';
 
 class EmployeeTasksTab extends StatefulWidget {
@@ -46,44 +46,39 @@ class _EmployeeTasksTabState extends State<EmployeeTasksTab> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const AppSectionTitle(
+            title: "My tasks",
+            subtitle: "Open a task to view details and updates.",
+          ),
           Row(
             children: [
-              _Chip(label: "All", selected: filter == "All", onTap: () => setState(() => filter = "All")),
+              _chip("All"),
               const SizedBox(width: 8),
-              _Chip(label: "To Do", selected: filter == "To Do", onTap: () => setState(() => filter = "To Do")),
+              _chip("To Do"),
               const SizedBox(width: 8),
-              _Chip(label: "In Progress", selected: filter == "In Progress", onTap: () => setState(() => filter = "In Progress")),
+              _chip("In Progress"),
               const SizedBox(width: 8),
-              _Chip(label: "Done", selected: filter == "Done", onTap: () => setState(() => filter = "Done")),
+              _chip("Done"),
             ],
           ),
           const SizedBox(height: 12),
-
           Expanded(
             child: ListView.separated(
               itemCount: filtered.length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (context, i) {
                 final t = filtered[i];
-
                 return InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: () {
                     Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => TaskDetailsScreen(task: t),
-                      ),
-                    );
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => TaskDetailsScreen(task: t)));
                   },
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: const [BoxShadow(blurRadius: 10, offset: Offset(0, 4), color: Color(0x14000000))],
-                    ),
+                  child: AppCard(
                     child: Row(
                       children: [
                         const Icon(Icons.checklist_outlined),
@@ -92,14 +87,20 @@ class _EmployeeTasksTabState extends State<EmployeeTasksTab> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(t["title"] ?? "", style: const TextStyle(fontWeight: FontWeight.w700)),
+                              Text(t["title"] ?? "",
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w800)),
                               const SizedBox(height: 4),
-                              Text("Due: ${t["due"]} • Priority: ${t["priority"]}", style: const TextStyle(fontSize: 12)),
+                              Text(
+                                "Due: ${t["due"]} • Priority: ${t["priority"]}",
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.black54),
+                              ),
                             ],
                           ),
                         ),
                         const SizedBox(width: 10),
-                        _Tag(text: t["status"] ?? ""),
+                        _pill(t["status"] ?? ""),
                       ],
                     ),
                   ),
@@ -111,19 +112,11 @@ class _EmployeeTasksTabState extends State<EmployeeTasksTab> {
       ),
     );
   }
-}
 
-class _Chip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _Chip({required this.label, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _chip(String label) {
+    final selected = filter == label;
     return InkWell(
-      onTap: onTap,
+      onTap: () => setState(() => filter = label),
       borderRadius: BorderRadius.circular(999),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -132,25 +125,22 @@ class _Chip extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
           border: Border.all(color: const Color(0xFFE5E7EB)),
         ),
-        child: Text(label, style: TextStyle(color: selected ? Colors.white : Colors.black, fontSize: 12)),
+        child: Text(label,
+            style: TextStyle(
+                color: selected ? Colors.white : Colors.black, fontSize: 12)),
       ),
     );
   }
-}
 
-class _Tag extends StatelessWidget {
-  final String text;
-  const _Tag({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _pill(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: const Color(0xFFF2F4F7),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+      child: Text(text,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
     );
   }
 }

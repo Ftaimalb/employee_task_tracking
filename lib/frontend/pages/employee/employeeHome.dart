@@ -24,30 +24,49 @@ class _EmployeeHomeState extends State<EmployeeHome> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 247, 248, 250),
-      appBar: AppBar(
-        title: const Text("Employee"),
-        centerTitle: true,
-      ),
-      body: pages[index],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: index,
-        selectedItemColor: const Color.fromARGB(255, 25, 120, 110),
-        unselectedItemColor: Colors.black54,
-        onTap: (i) => setState(() => index = i),
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined), label: "Home"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.checklist_outlined), label: "My Tasks"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.notifications_none), label: "Alerts"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline), label: "Profile"),
-        ],
-      ),
+    return Stack(
+      children: [
+        // Background gradient
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color.fromARGB(255, 164, 227, 217),
+                Color.fromARGB(255, 232, 226, 226),
+              ],
+            ),
+          ),
+        ),
+
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            title: const Text("Employee"),
+            centerTitle: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+          ),
+          body: pages[index],
+          bottomNavigationBar: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            currentIndex: index,
+            onTap: (i) => setState(() => index = i),
+            items: const [
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.dashboard_outlined), label: "Home"),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.checklist_outlined), label: "My Tasks"),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.notifications_none), label: "Alerts"),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline), label: "Profile"),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
