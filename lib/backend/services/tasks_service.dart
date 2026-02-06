@@ -9,6 +9,7 @@ class TaskService {
     required String description,
     required String priority,
     required String assigneeName,
+    required String assigneeUid,
     DateTime? dueDate,
   }) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -21,6 +22,7 @@ class TaskService {
       "description": description.trim(),
       "priority": priority,
       "status": "To Do",
+      "assigneeUid":assigneeUid,
       "assigneeName": assigneeName,
       "dueDate": dueDate == null ? null : Timestamp.fromDate(dueDate),
       "createdByUid": uid,

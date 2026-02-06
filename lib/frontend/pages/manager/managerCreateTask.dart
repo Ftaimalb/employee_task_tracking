@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../widgets/UI_cards.dart';
 import '../../../backend/services/tasks_service.dart';
 
 class CreateTaskScreen extends StatefulWidget {
@@ -10,27 +12,64 @@ class CreateTaskScreen extends StatefulWidget {
 
 class _CreateTaskScreenState extends State<CreateTaskScreen> {
   final taskService = TaskService();
+  final titleCtrl = TextEditingController();
+  final descCtrl = TextEditingController();
+
   bool saving = false;
 
   final formKey = GlobalKey<FormState>();
 
-  final titleCtrl = TextEditingController();
-  final descCtrl = TextEditingController();
 
   String priority = "Medium";
-  String assignee = "Ali Hassan";
   DateTime? dueDate;
 
   final dummyEmployees = ["Ali Hassan"];
 
   @override
+  void initState() {
+    super.initState();
+    _loadEmployees();
+  }
+
+    @override
   void dispose() {
     titleCtrl.dispose();
     descCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> pickDueDate() async {
+  Future<void> _loadEmployees() async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .where('role', isEqualTo: 'employee')
+          .where('isActive', isEqualTo: true)
+          .get();
+
+      final list = snap.docs.map((d) {
+        final data = d.data();
+        data["uid"] = d.id; // because document id = UID
+        return data;
+      }).toList();
+
+      setState(() {
+        employees = list;
+        if (employees.isNotEmpty) {
+          selectedEmployee = employees.first;
+        }
+      });
+    } catch (_) {
+      
+      setState(() {
+        employees = [];
+        selectedEmployee = null;
+      });
+    }
+  }
+
+
+
+  Future<void> _pickDueDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -43,39 +82,58 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     }
   }
 
-  Future<void> submit() async {
+    Future<void> _createTask() async {
     if (!(formKey.currentState?.validate() ?? false)) return;
+
+    if (selectedEmployee == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No employee selected.")),
+      );
+      return;
+    }
 
     setState(() => saving = true);
 
     try {
-      final id = await taskService.createTask(
+      final assigneeUid = selectedEmployee!["uid"].toString();
+
+      // prefer username, fallback to email
+      final assigneeName = (selectedEmployee!["username"] ??
+              selectedEmployee!["email"] ??
+              "Employee")
+          .toString();
+
+      final taskId = await taskService.createTask(
         title: titleCtrl.text,
         description: descCtrl.text,
         priority: priority,
-        assigneeName: assignee,
+        assigneeUid: assigneeUid,
+        assigneeName: assigneeName,
         dueDate: dueDate,
       );
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Task created (ID: $id)")),
+        SnackBar(content: Text("Task created (ID: $taskId)")),
       );
 
-
+      // reset some fields
       titleCtrl.clear();
       descCtrl.clear();
       setState(() {
         priority = "Medium";
-        assignee = dummyEmployees.first;
         dueDate = null;
+        // keep same selected employee 
       });
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                "Could not create task: ${e.toString().replaceFirst('Exception: ', '')}")),
+          content: Text(
+            "Could not create task: ${e.toString().replaceFirst('Exception: ', '')}",
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => saving = false);
@@ -88,108 +146,137 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         ? "Select due date"
         : "Due: ${dueDate!.day}/${dueDate!.month}/${dueDate!.year}";
 
-    return Scaffold(
+  return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
-      appBar: AppBar(title: const Text("Create Task")),
+      appBar: AppBar(
+        title: const Text("Create Task"),
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Form(
-          key: formKey,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                    color: Color(0x14000000)),
-              ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const AppSectionTitle(
+              title: "New task",
+              subtitle: "Fill in the details and assign it to an employee.",
             ),
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: titleCtrl,
-                  decoration: InputDecoration(
-                    labelText: "Task title",
-                    prefixIcon: const Icon(Icons.title),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                  ),
-                  validator: (v) =>
-                      (v ?? "").trim().isEmpty ? "Title is required." : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: descCtrl,
-                  maxLines: 4,
-                  decoration: InputDecoration(
-                    labelText: "Description",
-                    alignLabelWithHint: true,
-                    prefixIcon: const Icon(Icons.description_outlined),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: priority,
-                  decoration: InputDecoration(
-                    labelText: "Priority",
-                    prefixIcon: const Icon(Icons.flag_outlined),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: "Low", child: Text("Low")),
-                    DropdownMenuItem(value: "Medium", child: Text("Medium")),
-                    DropdownMenuItem(value: "High", child: Text("High")),
+
+            AppCard(
+              child: Form(
+                key: formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: titleCtrl,
+                      decoration: InputDecoration(
+                        labelText: "Task title",
+                        prefixIcon: const Icon(Icons.title),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      validator: (v) {
+                        if ((v ?? "").trim().isEmpty) return "Title is required.";
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+
+                    TextFormField(
+                      controller: descCtrl,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        labelText: "Description (optional)",
+                        alignLabelWithHint: true,
+                        prefixIcon: const Icon(Icons.description_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    DropdownButtonFormField<String>(
+                      value: priority,
+                      decoration: InputDecoration(
+                        labelText: "Priority",
+                        prefixIcon: const Icon(Icons.flag_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: "Low", child: Text("Low")),
+                        DropdownMenuItem(value: "Medium", child: Text("Medium")),
+                        DropdownMenuItem(value: "High", child: Text("High")),
+                      ],
+                      onChanged: (v) => setState(() => priority = v ?? "Medium"),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Assign employee section
+                    if (employees.isEmpty) ...[
+                      const AppCard(
+                        child: Text(
+                          "No employees found.\n\n",
+                          style: TextStyle(fontSize: 13),
+                        ),
+                      ),
+                    ] else ...[
+                      DropdownButtonFormField<Map<String, dynamic>>(
+                        value: selectedEmployee,
+                        decoration: InputDecoration(
+                          labelText: "Assign to",
+                          prefixIcon: const Icon(Icons.person_outline),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        items: employees.map((e) {
+                          final name = (e["username"] ?? e["email"] ?? "Employee").toString();
+                          return DropdownMenuItem(
+                            value: e,
+                            child: Text(name),
+                          );
+                        }).toList(),
+                        onChanged: (v) => setState(() => selectedEmployee = v),
+                      ),
+                    ],
+
+                    const SizedBox(height: 12),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton.icon(
+                        onPressed: _pickDueDate,
+                        icon: const Icon(Icons.calendar_today_outlined),
+                        label: Text(dueLabel),
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: saving ? null : _createTask,
+                        child: saving
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Text("Create task"),
+                      ),
+                    ),
                   ],
-                  onChanged: (v) => setState(() => priority = v ?? "Medium"),
                 ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: assignee,
-                  decoration: InputDecoration(
-                    labelText: "Assign to",
-                    prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                  ),
-                  items: dummyEmployees
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (v) =>
-                      setState(() => assignee = v ?? dummyEmployees.first),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: OutlinedButton.icon(
-                    onPressed: pickDueDate,
-                    icon: const Icon(Icons.calendar_today_outlined),
-                    label: Text(dueLabel),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: saving ? null : submit,
-                    child: saving
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Text("Create task"),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

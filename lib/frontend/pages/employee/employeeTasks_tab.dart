@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../../widgets/UI_cards.dart';
+
+import '../../widgets/ui_cards.dart';
 import '../sharedPages/taskDetailsPage.dart';
 
 class EmployeeTasksTab extends StatefulWidget {
@@ -10,38 +13,21 @@ class EmployeeTasksTab extends StatefulWidget {
 }
 
 class _EmployeeTasksTabState extends State<EmployeeTasksTab> {
-  String filter = "All";
-
-  final myTasks = [
-    {
-      "title": "Prepare weekly report",
-      "assignee": "You",
-      "due": "Fri",
-      "priority": "High",
-      "status": "In Progress",
-    },
-    {
-      "title": "Upload attendance sheet",
-      "assignee": "You",
-      "due": "Today",
-      "priority": "Medium",
-      "status": "To Do",
-    },
-    {
-      "title": "Complete training module",
-      "assignee": "You",
-      "due": "Next week",
-      "priority": "Low",
-      "status": "Done",
-    },
-  ];
+  String selectedFilter = "All";
 
   @override
   Widget build(BuildContext context) {
-    final filtered = myTasks.where((t) {
-      if (filter == "All") return true;
-      return (t["status"] ?? "") == filter;
-    }).toList();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid == null) {
+      return const Center(child: Text("Not logged in."));
+    }
+
+    final taskStream = FirebaseFirestore.instance
+        .collection('tasks')
+        .where('assigneeUid', isEqualTo: uid)
+        .orderBy('createdAt', descending: true)
+        .snapshots();
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -50,60 +36,109 @@ class _EmployeeTasksTabState extends State<EmployeeTasksTab> {
         children: [
           const AppSectionTitle(
             title: "My tasks",
-            subtitle: "Open a task to view details and updates.",
+            subtitle: "Tasks assigned to you .",
           ),
           Row(
             children: [
-              _chip("All"),
+              _filterChip("All"),
               const SizedBox(width: 8),
-              _chip("To Do"),
+              _filterChip("To Do"),
               const SizedBox(width: 8),
-              _chip("In Progress"),
+              _filterChip("In Progress"),
               const SizedBox(width: 8),
-              _chip("Done"),
+              _filterChip("Done"),
             ],
           ),
           const SizedBox(height: 12),
           Expanded(
-            child: ListView.separated(
-              itemCount: filtered.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (context, i) {
-                final t = filtered[i];
-                return InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => TaskDetailsScreen(task: t)));
-                  },
-                  child: AppCard(
-                    child: Row(
-                      children: [
-                        const Icon(Icons.checklist_outlined),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(t["title"] ?? "",
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 4),
-                              Text(
-                                "Due: ${t["due"]} • Priority: ${t["priority"]}",
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.black54),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        _pill(t["status"] ?? ""),
-                      ],
+            child: StreamBuilder<QuerySnapshot>(
+              stream: taskStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(child: Text("Failed to load tasks."));
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final docs = snapshot.data?.docs ?? [];
+
+                List<Map<String, dynamic>> tasks = [];
+                for (var doc in docs) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  data["id"] = doc.id;
+                  tasks.add(data);
+                }
+
+                // Apply filter locally
+                final visibleTasks = tasks.where((task) {
+                  if (selectedFilter == "All") return true;
+                  return task["status"] == selectedFilter;
+                }).toList();
+
+                if (visibleTasks.isEmpty) {
+                  return AppCard(
+                    child: Text(
+                      selectedFilter == "All"
+                          ? "No tasks assigned to you yet."
+                          : "No tasks in '$selectedFilter' right now.",
+                      style: const TextStyle(fontSize: 13),
                     ),
-                  ),
+                  );
+                }
+
+                return ListView.separated(
+                  itemCount: visibleTasks.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final task = visibleTasks[index];
+
+                    final title = task["title"] ?? "Untitled task";
+                    final status = task["status"] ?? "To Do";
+                    final priority = task["priority"] ?? "Medium";
+                    final due = _formatDueDate(task["dueDate"]);
+
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => TaskDetailsScreen(task: task),
+                          ),
+                        );
+                      },
+                      child: AppCard(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.checklist_outlined),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    title,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w800),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "Due: $due • Priority: $priority",
+                                    style: const TextStyle(
+                                        fontSize: 12, color: Colors.black54),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            _statusPill(status),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -113,34 +148,56 @@ class _EmployeeTasksTabState extends State<EmployeeTasksTab> {
     );
   }
 
-  Widget _chip(String label) {
-    final selected = filter == label;
+  Widget _filterChip(String label) {
+    final isSelected = selectedFilter == label;
+
     return InkWell(
-      onTap: () => setState(() => filter = label),
+      onTap: () {
+        setState(() {
+          selectedFilter = label;
+        });
+      },
       borderRadius: BorderRadius.circular(999),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? Colors.black : Colors.white,
+          color: isSelected ? Colors.black : Colors.white,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(color: const Color(0xFFE5E7EB)),
         ),
-        child: Text(label,
-            style: TextStyle(
-                color: selected ? Colors.white : Colors.black, fontSize: 12)),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: isSelected ? Colors.white : Colors.black,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _pill(String text) {
+  Widget _statusPill(String status) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: const Color(0xFFF2F4F7),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(text,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+      child: Text(
+        status,
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+      ),
     );
+  }
+
+  String _formatDueDate(dynamic dueDate) {
+    if (dueDate == null) return "-";
+
+    if (dueDate is Timestamp) {
+      final d = dueDate.toDate();
+      return "${d.day}/${d.month}/${d.year}";
+    }
+
+    return dueDate.toString();
   }
 }
