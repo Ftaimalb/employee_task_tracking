@@ -14,16 +14,16 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   final taskService = TaskService();
   final titleCtrl = TextEditingController();
   final descCtrl = TextEditingController();
-
-  bool saving = false;
-
   final formKey = GlobalKey<FormState>();
 
+  bool saving = false;
 
   String priority = "Medium";
   DateTime? dueDate;
 
-  final dummyEmployees = ["Ali Hassan"];
+  // employees loaded from Firestore
+  List<Map<String, dynamic>> employees = [];
+  Map<String, dynamic>? selectedEmployee;
 
   @override
   void initState() {
@@ -31,7 +31,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     _loadEmployees();
   }
 
-    @override
+  @override
   void dispose() {
     titleCtrl.dispose();
     descCtrl.dispose();
@@ -48,26 +48,21 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
       final list = snap.docs.map((d) {
         final data = d.data();
-        data["uid"] = d.id; // because document id = UID
+        data["uid"] = d.id; // doc id = Firebase Auth UID
         return data;
       }).toList();
 
       setState(() {
         employees = list;
-        if (employees.isNotEmpty) {
-          selectedEmployee = employees.first;
-        }
+        selectedEmployee = employees.isNotEmpty ? employees.first : null;
       });
-    } catch (_) {
-      
+    } catch (e) {
       setState(() {
         employees = [];
         selectedEmployee = null;
       });
     }
   }
-
-
 
   Future<void> _pickDueDate() async {
     final now = DateTime.now();
@@ -77,12 +72,13 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       lastDate: DateTime(now.year + 2),
       initialDate: dueDate ?? now,
     );
+
     if (picked != null) {
       setState(() => dueDate = picked);
     }
   }
 
-    Future<void> _createTask() async {
+  Future<void> _createTask() async {
     if (!(formKey.currentState?.validate() ?? false)) return;
 
     if (selectedEmployee == null) {
@@ -96,12 +92,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
     try {
       final assigneeUid = selectedEmployee!["uid"].toString();
-
-      // prefer username, fallback to email
-      final assigneeName = (selectedEmployee!["username"] ??
-              selectedEmployee!["email"] ??
-              "Employee")
-          .toString();
+      final assigneeName =
+          (selectedEmployee!["username"] ?? selectedEmployee!["email"] ?? "Employee")
+              .toString();
 
       final taskId = await taskService.createTask(
         title: titleCtrl.text,
@@ -118,13 +111,11 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         SnackBar(content: Text("Task created (ID: $taskId)")),
       );
 
-      // reset some fields
       titleCtrl.clear();
       descCtrl.clear();
       setState(() {
         priority = "Medium";
         dueDate = null;
-        // keep same selected employee 
       });
     } catch (e) {
       if (!mounted) return;
@@ -146,7 +137,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         ? "Select due date"
         : "Due: ${dueDate!.day}/${dueDate!.month}/${dueDate!.year}";
 
-  return Scaffold(
+    return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
         title: const Text("Create Task"),
@@ -161,7 +152,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               title: "New task",
               subtitle: "Fill in the details and assign it to an employee.",
             ),
-
             AppCard(
               child: Form(
                 key: formKey,
@@ -182,7 +172,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                       },
                     ),
                     const SizedBox(height: 12),
-
                     TextFormField(
                       controller: descCtrl,
                       maxLines: 4,
@@ -196,7 +185,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-
                     DropdownButtonFormField<String>(
                       value: priority,
                       decoration: InputDecoration(
@@ -215,11 +203,10 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Assign employee section
                     if (employees.isEmpty) ...[
                       const AppCard(
                         child: Text(
-                          "No employees found.\n\n",
+                          "No employees found. Ask the admin to create employee accounts.",
                           style: TextStyle(fontSize: 13),
                         ),
                       ),
@@ -234,18 +221,15 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                           ),
                         ),
                         items: employees.map((e) {
-                          final name = (e["username"] ?? e["email"] ?? "Employee").toString();
-                          return DropdownMenuItem(
-                            value: e,
-                            child: Text(name),
-                          );
+                          final name =
+                              (e["username"] ?? e["email"] ?? "Employee").toString();
+                          return DropdownMenuItem(value: e, child: Text(name));
                         }).toList(),
                         onChanged: (v) => setState(() => selectedEmployee = v),
                       ),
                     ],
 
                     const SizedBox(height: 12),
-
                     SizedBox(
                       width: double.infinity,
                       height: 48,
@@ -255,9 +239,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         label: Text(dueLabel),
                       ),
                     ),
-
                     const SizedBox(height: 14),
-
                     SizedBox(
                       width: double.infinity,
                       height: 48,

@@ -26,7 +26,7 @@ class TaskService {
       "assigneeName": assigneeName,
       "dueDate": dueDate == null ? null : Timestamp.fromDate(dueDate),
       "createdByUid": uid,
-      "createdAt": FieldValue.serverTimestamp(),
+      "createdAt": Timestamp.now(),
     });
 
     return doc.id;
